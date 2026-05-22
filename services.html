@@ -316,30 +316,86 @@
     </a>
   </div>
 </section>
+<!-- ===== TRACK SERVICE ===== -->
+
+<section class="tracking-section">
+
+  <h1>Track Your Service</h1>
+
+  <p class="section-subtitle">
+    Enter your tracking ID to check service status.
+  </p>
+
+  <div class="tracking-box">
+
+    <input
+      type="text"
+      id="trackingInput"
+      placeholder="Enter Tracking ID">
+
+    <button onclick="trackService()">
+      Track Service
+    </button>
+
+    <div id="trackingResult"></div>
+
+  </div>
+
+</section>
 
 <!-- ===== FOOTER ===== -->
+
 <footer>
   <p>© 2026 Fresh Air (Developed by sajal and keshav pathak)</p>
 </footer>
 
 <script>
-
 document.addEventListener("DOMContentLoaded", () => {
 
-    const cartBtn = document.getElementById("cartBtn");
-    const cartPanel = document.getElementById("cartPanel");
-    const closeCart = document.getElementById("closeCart");
+    // ELEMENTS 
 
-    const cartItems = document.getElementById("cartItems");
-    const cartTotal = document.getElementById("cartTotal");
-    const cartCount = document.getElementById("cartCount");
+    const cartBtn =
+      document.getElementById("cartBtn");
 
-    const checkoutBtn = document.getElementById("checkoutBtn");
+    const cartPanel =
+      document.getElementById("cartPanel");
 
-    let total = 0;
-    let count = 0;
+    const closeCart =
+      document.getElementById("closeCart");
 
-    // OPEN CART
+    const cartItems =
+      document.getElementById("cartItems");
+
+    const cartTotal =
+      document.getElementById("cartTotal");
+
+    const cartCount =
+      document.getElementById("cartCount");
+
+    const checkoutBtn =
+      document.getElementById("checkoutBtn");
+
+    const logoutBtn =
+      document.querySelector(".logout-btn");
+
+    // LOGOUT 
+
+    logoutBtn.addEventListener("click", () => {
+
+        localStorage.removeItem("loggedInUser");
+
+        alert("Logged Out Successfully");
+
+        window.location.href = "login.html";
+
+    });
+
+    //  LOCAL STORAGE
+
+    let cart =
+      JSON.parse(localStorage.getItem("cart")) || [];
+
+    //  OPEN CART 
 
     cartBtn.addEventListener("click", () => {
 
@@ -347,7 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    // CLOSE CART
+    //  CLOSE CART 
 
     closeCart.addEventListener("click", () => {
 
@@ -355,106 +411,153 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-    // =========================
-    // ADD TO CART
-    // =========================
+    // ================= RENDER CART =================
 
-    const addButtons = document.querySelectorAll(".add-cart");
+    function renderCart(){
 
-    addButtons.forEach(button => {
+        cartItems.innerHTML = "";
 
-        button.addEventListener("click", () => {
+        let total = 0;
 
-            const name = button.dataset.name;
+        if(cart.length === 0){
 
-            const price = Number(button.dataset.price);
+            cartItems.innerHTML = `
 
-            // Remove Empty Text
+              <p class="empty-cart">
 
-            const empty = document.querySelector(".empty-cart");
+                No plans selected
 
-            if(empty){
-                empty.remove();
-            }
+              </p>
 
-            // Create Item
-
-            const item = document.createElement("div");
-
-            item.classList.add("cart-item");
-
-            item.innerHTML = `
-                <div class="cart-item-top">
-
-                    <div>
-                        <h4>${name}</h4>
-                        <p>Price: ₹${price}</p>
-                    </div>
-
-                    <button class="remove-btn">
-                        ✖
-                    </button>
-
-                </div>
             `;
 
-            cartItems.appendChild(item);
+        }
 
-            // Update Total
+        cart.forEach((item, index) => {
 
-            total += price;
+            total += item.price;
 
-            count++;
+            const div =
+              document.createElement("div");
 
-            cartTotal.innerText = total;
+            div.classList.add("cart-item");
 
-            cartCount.innerText = count;
+            div.innerHTML = `
 
-            // Open Cart
+              <div class="cart-item-top">
 
-            cartPanel.classList.add("active");
+                <div>
 
-            // Remove Item
+                  <h4>${item.name}</h4>
 
-            const removeBtn = item.querySelector(".remove-btn");
+                  <p>
 
-            removeBtn.addEventListener("click", () => {
+                    Price: ₹${item.price}
 
-                item.remove();
+                  </p>
 
-                total -= price;
+                </div>
 
-                count--;
+                <button class="remove-btn"
+                        data-index="${index}">
 
-                cartTotal.innerText = total;
+                  ✖
 
-                cartCount.innerText = count;
+                </button>
 
-                // Empty Cart Message
+              </div>
 
-                if(count === 0){
+            `;
 
-                    cartItems.innerHTML = `
-                        <p class="empty-cart">
-                            No plans selected
-                        </p>
-                    `;
+            cartItems.appendChild(div);
 
-                }
+        });
+
+        // UPDATE TOTAL + COUNT
+
+        cartTotal.innerText = total;
+
+        cartCount.innerText = cart.length;
+
+        // SAVE
+
+        localStorage.setItem(
+          "cart",
+          JSON.stringify(cart)
+        );
+
+        // REMOVE ITEM
+
+        document.querySelectorAll(".remove-btn")
+        .forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                const index =
+                  btn.dataset.index;
+
+                cart.splice(index, 1);
+
+                renderCart();
 
             });
 
         });
 
+    }
+
+    // INITIAL RENDER
+
+    renderCart();
+
+    // ================= ADD TO CART =================
+
+    document.querySelectorAll(".add-cart")
+    .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+            const name =
+              button.dataset.name;
+
+            const price =
+              Number(button.dataset.price);
+
+            // PREVENT DUPLICATES
+
+            const exists =
+              cart.some(item =>
+                item.name === name
+              );
+
+            if(exists){
+
+                alert("Plan already added");
+
+                return;
+
+            }
+
+            // ADD
+
+            cart.push({
+                name,
+                price
+            });
+
+            renderCart();
+
+            cartPanel.classList.add("active");
+
+        });
+
     });
 
-    // =========================
-    // PAYMENT GATEWAY
-    // =========================
+    // ================= CHECKOUT =================
 
     checkoutBtn.addEventListener("click", () => {
 
-        if(total <= 0){
+        if(cart.length === 0){
 
             alert("Your cart is empty");
 
@@ -462,9 +565,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         }
 
+        let total = 0;
+
+        cart.forEach(item => {
+
+            total += item.price;
+
+        });
+
+        // ================= RAZORPAY =================
+
         const options = {
 
-            key: "rzp_test_SruJuFH0M9jPrO",
+            key: "rzp_test_SsVoFOWJzITPmJ",
 
             amount: total * 100,
 
@@ -476,40 +589,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
             image: "images/logo.png",
 
+            // ================= SUCCESS =================
+
             handler: function(response){
 
-                alert(
-                    "Payment Successful ✅\nPayment ID: " +
-                    response.razorpay_payment_id
+                // TRACKING ID
+
+                const trackingID =
+                  "FA" +
+                  Math.floor(Math.random() * 100000);
+
+                // SAVE SERVICE
+
+                const serviceData = {
+
+                    trackingID:
+                      trackingID,
+
+                    paymentID:
+                      response.razorpay_payment_id,
+
+                    plans:
+                      cart,
+
+                    total:
+                      total,
+
+                    status:
+                      "Technician Assigned",
+
+                    date:
+                      new Date().toLocaleString()
+
+                };
+
+                let services =
+                  JSON.parse(
+                    localStorage.getItem("services")
+                  ) || [];
+
+                services.push(serviceData);
+
+                localStorage.setItem(
+                  "services",
+                  JSON.stringify(services)
                 );
 
-                // Clear Cart After Payment
+alert(
+  "Payment Successful ✅\n\n" +
+  "Tracking ID: " + trackingID +
+  "\n\nUse this ID in Track Your Service section."
+);
 
-                cartItems.innerHTML = `
-                    <p class="empty-cart">
-                        No plans selected
-                    </p>
-                `;
+// SHOW TRACKING DETAILS INSIDE TRACK SECTION
 
-                total = 0;
+const trackingResult =
+  document.getElementById("trackingResult");
 
-                count = 0;
+trackingResult.innerHTML = `
 
-                cartTotal.innerText = total;
+  <div class="success-box">
 
-                cartCount.innerText = count;
+    <h2>
+      Booking Confirmed ✅
+    </h2>
+
+    <p>
+      <strong>Tracking ID:</strong>
+      ${trackingID}
+    </p>
+
+    <p>
+      <strong>Payment ID:</strong>
+      ${response.razorpay_payment_id}
+    </p>
+
+    <p>
+      <strong>Status:</strong>
+      Technician Assigned
+    </p>
+
+    <p>
+      Use this Tracking ID for future tracking.
+    </p>
+
+  </div>
+
+`;
+// CLEAR CART
+
+                cart = [];
+
+                renderCart();
 
             },
+
+            // PREFILL
 
             prefill: {
 
-                name: localStorage.getItem("loggedInUser") || "Customer",
+                name:
+                  localStorage.getItem("loggedInUser")
+                  || "Customer",
 
-                email: "customer@gmail.com",
+                email:
+                  "customer@gmail.com",
 
-                contact: "9999999999"
+                contact:
+                  "9999999999"
 
             },
+
+            // UPI DISPLAY
 
             config: {
 
@@ -519,7 +710,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         upi: {
 
-                            name: "Pay using UPI",
+                            name:
+                              "Pay Using UPI",
 
                             instruments: [
 
@@ -533,17 +725,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     },
 
-                    sequence: ["block.upi"],
+                    sequence:
+                      ["block.upi"],
 
                     preferences: {
 
-                        show_default_blocks: true
+                        show_default_blocks:
+                          true
 
                     }
 
                 }
 
             },
+
+            // THEME
 
             theme: {
 
@@ -553,13 +749,119 @@ document.addEventListener("DOMContentLoaded", () => {
 
         };
 
-        const rzp = new Razorpay(options);
+        const rzp =
+          new Razorpay(options);
 
         rzp.open();
 
     });
 
 });
+// ================= TRACK SERVICE =================
+
+function trackService(){
+
+    const input =
+      document.getElementById("trackingInput").value;
+
+    const result =
+      document.getElementById("trackingResult");
+
+    const services =
+      JSON.parse(localStorage.getItem("services")) || [];
+
+    // EMPTY INPUT
+
+    if(input === ""){
+
+        result.innerHTML = `
+
+          <span style="color:red;">
+
+            Please Enter Tracking ID
+
+          </span>
+
+        `;
+
+        return;
+
+    }
+
+    // FIND SERVICE
+
+    const found =
+      services.find(service =>
+        service.trackingID === input
+      );
+
+    // FOUND
+
+    if(found){
+
+        result.innerHTML = `
+
+          <h3>
+
+            Tracking ID:
+            ${found.trackingID}
+
+          </h3>
+
+          <p>
+
+            Status:
+
+            <span class="status">
+
+              ${found.status}
+
+            </span>
+
+          </p>
+
+          <p>
+
+            Total Paid:
+            ₹${found.total}
+
+          </p>
+
+          <p>
+
+            Booking Date:
+            ${found.date}
+
+          </p>
+
+          <p>
+
+            Payment ID:
+            ${found.paymentID}
+
+          </p>
+
+        `;
+
+    }
+
+    // NOT FOUND
+
+    else{
+
+        result.innerHTML = `
+
+          <span style="color:red;">
+
+            Tracking ID Not Found
+
+          </span>
+
+        `;
+
+    }
+
+}
 
 </script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>

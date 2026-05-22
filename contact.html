@@ -65,22 +65,22 @@
 
       <form id="contactForm">
 
-        <div class="row">
-          <input type="text" placeholder="Enter Name" required>
-          <input type="text" placeholder="Enter Phone Number" required>
-        </div>
+  <div class="row">
+    <input type="text" id="name" placeholder="Enter Name" required>
+    <input type="text" id="phone" placeholder="Enter Phone Number" required>
+  </div>
 
-        <input type="email" placeholder="Enter Email ID" required>
+  <input type="email" id="email" placeholder="Enter Email ID" required>
 
-        <div class="row">
-          <input type="text" placeholder="Subject" required>
-          <input type="text" placeholder="Enter Location" required>
-        </div>
+  <div class="row">
+    <input type="text" id="subject" placeholder="Subject" required>
+    <input type="text" id="location" placeholder="Enter Location" required>
+  </div>
 
-        <textarea placeholder="Write here..." required></textarea>
+  <textarea id="message" placeholder="Write here..." required></textarea>
 
-        <button type="submit">Submit</button>
-      </form>
+  <button type="submit">Submit</button>
+</form>
     </div>
 
   </div>
@@ -94,10 +94,37 @@
     <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1875.3152219206895!2d77.03663386700124!3d28.632566588667586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d0515c5927d97%3A0xe5a4914966a7ac6d!2s116%2C%20R%20Block%20Rd%2C%20Block%20P%2C%20Mohan%20Garden%2C%20Razapur%20Khurd%2C%20Delhi%2C%20110059%2C%20India!5e0!3m2!1sen!2sus!4v1774587563175!5m2!1sen!2sus" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
   </div>
 </section>
-
 <footer>
   <p>© 2026 Fresh Air (Developed by sajal and keshav pathak)</p>
 </footer>
+<script>
+document.getElementById("contactForm").addEventListener("submit", function(e) {
+    e.preventDefault();
 
+    // Create object
+    const contactData = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        subject: document.getElementById("subject").value,
+        location: document.getElementById("location").value,
+        message: document.getElementById("message").value
+    };
+
+    // Get old data
+    let contacts = JSON.parse(localStorage.getItem("contacts")) || [];
+
+    // Add new data
+    contacts.push(contactData);
+
+    // Save back to localStorage
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+
+    alert("Support request submitted successfully!");
+
+    // Reset form
+    document.getElementById("contactForm").reset();
+});
+</script>
 </body>
 </html>
